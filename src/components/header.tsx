@@ -4,9 +4,7 @@ import Link from "next/link";
 import { ConnectButton, darkTheme } from "thirdweb/react";
 import { client } from "@/app/client";
 import { usePathname } from "next/navigation";
-import { defineChain } from "thirdweb/chains";
-
-const mantle = defineChain(5003);
+import { mantleTestnet } from "@/lib/chain";
 
 export function Header() {
   const pathname = usePathname();
@@ -63,6 +61,8 @@ export function Header() {
         <div className="relative group">
           <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
           <ConnectButton
+            chain={mantleTestnet}
+            chains={[mantleTestnet]}
             theme={darkTheme({
               colors: {
                 primaryButtonBg: "#00e59b",

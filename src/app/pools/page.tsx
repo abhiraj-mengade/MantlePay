@@ -1,96 +1,95 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-
-type Tranche = {
-  name: string;
-  funded: number;
-  target: number;
-  apy: number;
-};
-
-type ReceivablePool = {
-  id: string;
-  name: string;
-  description: string;
-  totalValue: number;
-  maturityDate: Date;
-  status: "active" | "funded" | "matured";
-  seniorTranche: Tranche;
-  juniorTranche: Tranche;
-  receivableCount: number;
-};
+import { useReadContract } from "thirdweb/react";
+import { getCascadeProtocolContract, parsePoolData, calculatePoolStats, type PoolData } from "@/lib/hooks";
+import { areContractsDeployed, formatMNT } from "@/lib/contracts";
 
 export default function Pools() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [pools, setPools] = useState<PoolData[]>([]);
   const poolsPerPage = 6;
+  const contractsDeployed = areContractsDeployed();
+  const contract = getCascadeProtocolContract();
 
-  // Mock pools data
-  const mockPools: ReceivablePool[] = [
-    {
-      id: "1",
-      name: "Receivables Pool Alpha",
-      description: "High-quality short-term receivables with 30-60 day maturity",
-      totalValue: 500000,
-      maturityDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
-      status: "active",
-      seniorTranche: {
-        name: "Senior",
-        funded: 300000,
-        target: 400000,
-        apy: 8.5,
-      },
-      juniorTranche: {
-        name: "Junior",
-        funded: 50000,
-        target: 100000,
-        apy: 14.5,
-      },
-      receivableCount: 45,
-    },
-    {
-      id: "2",
-      name: "Receivables Pool Beta",
-      description: "Diversified portfolio with mixed maturity periods",
-      totalValue: 750000,
-      maturityDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-      status: "active",
-      seniorTranche: {
-        name: "Senior",
-        funded: 450000,
-        target: 600000,
-        apy: 9.0,
-      },
-      juniorTranche: {
-        name: "Junior",
-        funded: 100000,
-        target: 150000,
-        apy: 16.0,
-      },
-      receivableCount: 62,
-    },
-  ];
+  // Get pool count from contract
+  const { data: poolCount, isLoading: isLoadingCount } = useReadContract({
+    contract,
+    method: "poolCount" as const,
+    params: [],
+  });
 
-  const [pools] = useState<ReceivablePool[]>(mockPools);
-  const [isLoading] = useState(false);
+  // Fetch individual pools (we'll fetch pools 1 to poolCount)
+  // Note: Pool IDs start from 1 in the contract
+  const poolIds = poolCount ? Array.from({ length: Number(poolCount) }, (_, i) => i + 1) : [];
+
+  // We need to fetch each pool individually
+  const { data: pool1Data } = useReadContract({
+    contract,
+    method: "pools" as const,
+    params: [BigInt(1)],
+  });
+
+  const { data: pool2Data } = useReadContract({
+    contract,
+    method: "pools" as const,
+    params: [BigInt(2)],
+  });
+
+  const { data: pool3Data } = useReadContract({
+    contract,
+    method: "pools" as const,
+    params: [BigInt(3)],
+  });
+
+  useEffect(() => {
+    if (!contractsDeployed || !poolCount) {
+      setPools([]);
+      return;
+    }
+
+    const fetchedPools: PoolData[] = [];
+    const poolDataArray = [pool1Data, pool2Data, pool3Data];
+
+    for (let i = 0; i < Math.min(Number(poolCount), 3); i++) {
+      const data = poolDataArray[i];
+      if (data && data[0] !== "0x0000000000000000000000000000000000000000") {
+        fetchedPools.push(parsePoolData(i + 1, data));
+      }
+    }
+
+    setPools(fetchedPools);
+  }, [contractsDeployed, poolCount, pool1Data, pool2Data, pool3Data]);
+
+  const isLoading = isLoadingCount;
 
   const calculateStats = () => {
-    const totalPools = pools.length;
-    const totalValue = pools.reduce((sum, pool) => sum + pool.totalValue, 0);
-    const totalFunded = pools.reduce(
-      (sum, pool) => sum + pool.seniorTranche.funded + pool.juniorTranche.funded,
-      0,
-    );
-    const avgAPY =
-      pools.reduce((sum, pool) => sum + (pool.seniorTranche.apy + pool.juniorTranche.apy) / 2, 0) /
-      pools.length;
+    if (pools.length === 0) {
+      return {
+        totalPools: 0,
+        totalValue: "0",
+        totalFunded: "0",
+        avgAPY: "0",
+      };
+    }
+
+    let totalValueWei = 0n;
+    let totalFundedWei = 0n;
+    let totalAPY = 0;
+
+    pools.forEach((pool) => {
+      const stats = calculatePoolStats(pool);
+      totalValueWei += pool.receivableValue;
+      totalFundedWei += pool.seniorRaised + pool.juniorRaised;
+      totalAPY += (stats.seniorAPY + stats.juniorAPY) / 2;
+    });
 
     return {
-      totalPools,
-      totalValue,
-      totalFunded,
-      avgAPY: avgAPY.toFixed(1),
+      totalPools: pools.length,
+      totalValue: formatMNT(totalValueWei),
+      totalFunded: formatMNT(totalFundedWei),
+      avgAPY: (totalAPY / pools.length).toFixed(1),
     };
   };
 
@@ -100,6 +99,52 @@ export default function Pools() {
   const indexOfFirstPool = indexOfLastPool - poolsPerPage;
   const currentPools = pools.slice(indexOfFirstPool, indexOfLastPool);
   const totalPages = Math.ceil(pools.length / poolsPerPage);
+
+  // Show placeholder when contracts not deployed
+  if (!contractsDeployed) {
+    return (
+      <div className="w-full min-h-screen bg-background">
+        <div className="container mx-auto px-6 py-12">
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="mb-16 text-center animate-fade-in">
+              <h1
+                className="text-[clamp(2.5rem,6vw,4rem)] font-bold tracking-tight mb-4"
+                style={{ fontFamily: "var(--font-outfit)" }}
+              >
+                Receivable Pools
+              </h1>
+              <p
+                className="text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed"
+                style={{ fontFamily: "var(--font-lato)" }}
+              >
+                Browse and invest in tokenized receivable pools with transparent, blockchain-secured
+                returns
+              </p>
+            </div>
+
+            {/* Contract Not Deployed Message */}
+            <div className="p-12 rounded-2xl border border-yellow-500/30 bg-yellow-500/5 text-center animate-fade-in">
+              <div className="text-6xl mb-6">🚧</div>
+              <h2 className="text-2xl font-bold mb-4 text-yellow-500 font-stack-sans-text">
+                Contracts Not Yet Deployed
+              </h2>
+              <p className="text-foreground/70 mb-4 font-stack-sans-text max-w-xl mx-auto">
+                The CascadeProtocol and ReceiptNFT contracts need to be deployed to Mantle testnet.
+                Once deployed, update the contract addresses in{" "}
+                <code className="bg-foreground/10 px-2 py-1 rounded">src/lib/contracts.ts</code>
+              </p>
+              <div className="flex flex-col items-center gap-2 mt-6 text-sm text-foreground/60 font-stack-sans-text">
+                <p>1. Deploy ReceiptNFT contract first</p>
+                <p>2. Deploy CascadeProtocol with ReceiptNFT address</p>
+                <p>3. Update CONTRACT_ADDRESSES in contracts.ts</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full min-h-screen bg-background">
@@ -141,7 +186,7 @@ export default function Pools() {
                 Total Value
               </p>
               <p className="text-3xl font-bold text-foreground font-stack-sans-text">
-                {(stats.totalValue / 1000).toFixed(0)}K MNT
+                {stats.totalValue} MNT
               </p>
             </div>
 
@@ -150,7 +195,7 @@ export default function Pools() {
                 Total Funded
               </p>
               <p className="text-3xl font-bold text-primary font-stack-sans-text">
-                {(stats.totalFunded / 1000).toFixed(0)}K MNT
+                {stats.totalFunded} MNT
               </p>
             </div>
 
@@ -183,12 +228,27 @@ export default function Pools() {
                   </div>
                 ))}
               </div>
+            ) : pools.length === 0 ? (
+              <div className="p-12 rounded-2xl border border-foreground/15 bg-background/10 text-center">
+                <div className="text-6xl mb-6">📭</div>
+                <h3 className="text-xl font-bold mb-2 text-foreground font-stack-sans-text">
+                  No Pools Available Yet
+                </h3>
+                <p className="text-foreground/60 font-stack-sans-text">
+                  Be the first to create a receivables pool!
+                </p>
+                <Link
+                  href="/merchant"
+                  className="inline-block mt-6 px-6 py-3 rounded-full bg-primary text-background font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/25 active:scale-[0.98] font-stack-sans-text"
+                >
+                  Create Pool
+                </Link>
+              </div>
             ) : (
               <>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                   {currentPools.map((pool, index) => {
-                    const totalFunded = pool.seniorTranche.funded + pool.juniorTranche.funded;
-                    const progress = (totalFunded / pool.totalValue) * 100;
+                    const poolStats = calculatePoolStats(pool);
 
                     return (
                       <Link
@@ -200,24 +260,24 @@ export default function Pools() {
                         <div className="p-6 rounded-2xl border border-foreground/15 bg-background/10 ring-1 ring-foreground/5 hover:ring-primary/30 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10 h-full">
                           <div className="flex items-start justify-between mb-4">
                             <h3 className="text-lg font-bold text-foreground font-stack-sans-text">
-                              {pool.name}
+                              Pool #{pool.id}
                             </h3>
                             <span
                               className={`px-2 py-1 rounded-full text-xs font-bold border font-stack-sans-text ${
-                                pool.status === "active"
-                                  ? "text-primary bg-primary/10 border-primary/30"
-                                  : "text-foreground/60 bg-foreground/10 border-foreground/20"
+                                pool.isFunded
+                                  ? "text-blue-400 bg-blue-400/10 border-blue-400/30"
+                                  : "text-primary bg-primary/10 border-primary/30"
                               }`}
                             >
-                              {pool.status.toUpperCase()}
+                              {pool.isFunded ? "FUNDED" : "ACTIVE"}
                             </span>
                           </div>
 
                           <p
-                            className="text-sm text-foreground/60 mb-4"
+                            className="text-sm text-foreground/60 mb-4 truncate"
                             style={{ fontFamily: "var(--font-lato)" }}
                           >
-                            {pool.description}
+                            Merchant: {pool.merchant.slice(0, 6)}...{pool.merchant.slice(-4)}
                           </p>
 
                           <div className="space-y-3 mb-4">
@@ -226,27 +286,15 @@ export default function Pools() {
                                 Total Value
                               </span>
                               <span className="font-semibold text-primary font-stack-sans-text">
-                                {pool.totalValue.toLocaleString()} MNT
+                                {poolStats.totalValue} MNT
                               </span>
                             </div>
                             <div className="flex justify-between text-sm">
                               <span className="text-foreground/60 font-stack-sans-text">
-                                Receivables
+                                Advance (80%)
                               </span>
                               <span className="font-semibold text-foreground font-stack-sans-text">
-                                {pool.receivableCount}
-                              </span>
-                            </div>
-                            <div className="flex justify-between text-sm">
-                              <span className="text-foreground/60 font-stack-sans-text">
-                                Maturity
-                              </span>
-                              <span className="font-semibold text-foreground font-stack-sans-text">
-                                {pool.maturityDate.toLocaleDateString("en-US", {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                })}
+                                {poolStats.advanceAmount} MNT
                               </span>
                             </div>
                           </div>
@@ -258,13 +306,13 @@ export default function Pools() {
                                 Funding Progress
                               </span>
                               <span className="font-semibold text-primary font-stack-sans-text">
-                                {progress.toFixed(1)}%
+                                {poolStats.fundingProgress.toFixed(1)}%
                               </span>
                             </div>
                             <div className="w-full bg-foreground/10 rounded-full h-2 overflow-hidden">
                               <div
                                 className="bg-primary h-full rounded-full transition-all duration-500"
-                                style={{ width: `${progress}%` }}
+                                style={{ width: `${Math.min(poolStats.fundingProgress, 100)}%` }}
                               ></div>
                             </div>
                           </div>
@@ -276,7 +324,7 @@ export default function Pools() {
                                 Senior APY
                               </p>
                               <p className="text-lg font-bold text-primary font-stack-sans-text">
-                                {pool.seniorTranche.apy}%
+                                {poolStats.seniorAPY.toFixed(1)}%
                               </p>
                             </div>
                             <div className="p-3 rounded-lg bg-foreground/5 border border-foreground/10">
@@ -284,7 +332,7 @@ export default function Pools() {
                                 Junior APY
                               </p>
                               <p className="text-lg font-bold text-primary font-stack-sans-text">
-                                {pool.juniorTranche.apy}%
+                                {poolStats.juniorAPY.toFixed(1)}%
                               </p>
                             </div>
                           </div>
