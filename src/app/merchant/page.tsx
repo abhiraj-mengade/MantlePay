@@ -83,14 +83,14 @@ export default function Merchant() {
         <div className="grid lg:grid-cols-1 gap-8">
           {/* Create Sales Order Form */}
           <div className="animate-fade-in" style={{ animationDelay: "0.1s" }}>
-            <div className="p-4 rounded-xl border border-primary/20 bg-background/5">
+            <div className="p-4 rounded-2xl border border-foreground/15 bg-background/10 ring-1 ring-foreground/5">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-foreground font-stack-sans-text">
                   Create Sales Order
                 </h2>
                 <button
                   onClick={() => setShowForm(!showForm)}
-                  className="px-4 py-2 rounded-lg bg-primary text-background font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98] hover:brightness-110 font-stack-sans-text"
+                  className="px-5 py-2.5 rounded-full bg-primary text-background font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/25 active:scale-[0.98] font-stack-sans-text"
                 >
                   {showForm ? "Cancel" : "+ New Order"}
                 </button>
@@ -162,7 +162,7 @@ export default function Merchant() {
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    className="w-full px-6 py-3 rounded-lg bg-primary text-background font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98] hover:brightness-110 font-stack-sans-text"
+                    className="w-full px-6 py-3 rounded-full bg-primary text-background font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/25 active:scale-[0.98] font-stack-sans-text"
                   >
                     Create Sales Order
                   </button>
@@ -173,7 +173,7 @@ export default function Merchant() {
 
           {/* Sales Orders List */}
           <div className="animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            <div className="p-4 rounded-xl border border-primary/20 bg-background/5">
+            <div className="p-4 rounded-2xl border border-foreground/15 bg-background/10 ring-1 ring-foreground/5">
               <h2 className="text-xl font-bold mb-6 text-foreground font-stack-sans-text">
                 Your Sales Orders
               </h2>
@@ -191,7 +191,7 @@ export default function Merchant() {
                     {currentOrders.map((order, index) => (
                       <div
                         key={order.id}
-                        className="p-4 rounded-lg border border-foreground/20 bg-background hover:border-primary/40 transition-all duration-300"
+                        className="p-4 rounded-2xl border border-foreground/15 bg-background/10 ring-1 ring-foreground/5 hover:ring-primary/30 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300"
                         style={{ animationDelay: `${0.3 + index * 0.1}s` }}
                       >
                         <div className="flex items-start justify-between mb-3">
@@ -267,14 +267,14 @@ export default function Merchant() {
                           <button
                             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                             disabled={currentPage === 1}
-                            className="px-4 py-2 rounded-lg border border-foreground/20 bg-background text-foreground font-semibold transition-all duration-300 hover:border-primary/40 hover:bg-primary/5 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-foreground/20 disabled:hover:bg-background font-stack-sans-text"
+                            className="px-4 py-2 rounded-full border border-foreground/20 bg-background text-foreground font-semibold transition-all duration-300 hover:border-primary/40 hover:bg-primary/5 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-foreground/20 disabled:hover:bg-background font-stack-sans-text"
                           >
                             Previous
                           </button>
                           <button
                             onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                             disabled={currentPage === totalPages}
-                            className="px-4 py-2 rounded-lg border border-foreground/20 bg-background text-foreground font-semibold transition-all duration-300 hover:border-primary/40 hover:bg-primary/5 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-foreground/20 disabled:hover:bg-background font-stack-sans-text"
+                            className="px-4 py-2 rounded-full border border-foreground/20 bg-background text-foreground font-semibold transition-all duration-300 hover:border-primary/40 hover:bg-primary/5 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-foreground/20 disabled:hover:bg-background font-stack-sans-text"
                           >
                             Next
                           </button>

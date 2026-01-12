@@ -69,7 +69,7 @@ export default function CustomerPage() {
           {/* Scanner Section */}
           {!scannedOrder && !isScanning && (
             <div className="mb-12 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-              <div className="p-12 rounded-xl border border-primary/20 bg-background/5 text-center">
+              <div className="p-12 rounded-2xl border border-foreground/15 bg-background/10 ring-1 ring-foreground/5 text-center">
                 <div className="text-6xl mb-6">📱</div>
                 <h2 className="text-2xl font-bold mb-4 text-foreground font-stack-sans-text">
                   Ready to scan
@@ -82,7 +82,7 @@ export default function CustomerPage() {
                     setIsScanning(true);
                     setTimeout(simulateScan, 2000);
                   }}
-                  className="px-8 py-2 rounded-lg bg-primary text-background font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98] hover:brightness-110 font-stack-sans-text text-lg"
+                  className="px-8 py-2 rounded-full bg-primary text-background font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/25 active:scale-[0.98] font-stack-sans-text text-lg"
                 >
                   Start QR Scanner
                 </button>
@@ -93,7 +93,7 @@ export default function CustomerPage() {
           {/* Scanning in progress */}
           {isScanning && (
             <div className="mb-12 animate-fade-in">
-              <div className="p-12 rounded-xl border border-primary/20 bg-background/5 text-center">
+              <div className="p-12 rounded-2xl border border-foreground/15 bg-background/10 ring-1 ring-foreground/5 text-center">
                 <div className="animate-pulse text-6xl mb-6">📷</div>
                 <h2 className="text-2xl font-bold mb-4 text-foreground font-stack-sans-text">
                   Scanning...
@@ -108,7 +108,7 @@ export default function CustomerPage() {
           {/* Order Verification */}
           {scannedOrder && (
             <div className="mb-12 animate-fade-in">
-              <div className="p-8 rounded-xl border border-primary/20 bg-background/5">
+              <div className="p-8 rounded-2xl border border-foreground/15 bg-background/10 ring-1 ring-foreground/5">
                 <div className="text-center mb-6">
                   <div className="text-4xl mb-2">📋</div>
                   <h2
@@ -124,7 +124,7 @@ export default function CustomerPage() {
                   </div>
                 </div>
 
-                <div className="bg-foreground/5 border border-foreground/20 rounded-xl p-6 mb-6">
+                <div className="bg-foreground/5 border border-foreground/15 rounded-2xl p-6 mb-6 ring-1 ring-foreground/5">
                   <h3 className="font-bold text-lg mb-4 text-foreground font-stack-sans-text">
                     Order Details
                   </h3>
@@ -169,13 +169,13 @@ export default function CustomerPage() {
                 <div className="flex gap-4">
                   <button
                     onClick={handleReject}
-                    className="flex-1 px-6 py-3 rounded-lg border border-red-500/30 text-red-500 font-semibold transition-all duration-300 hover:bg-red-500/10 hover:border-red-500/50 font-stack-sans-text"
+                    className="flex-1 px-6 py-3 rounded-full border border-red-500/30 text-red-500 font-semibold transition-all duration-300 hover:bg-red-500/10 hover:border-red-500/50 font-stack-sans-text"
                   >
                     Reject
                   </button>
                   <button
                     onClick={handleApprove}
-                    className="flex-1 px-6 py-3 rounded-lg bg-primary text-background font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98] hover:brightness-110 font-stack-sans-text"
+                    className="flex-1 px-6 py-3 rounded-full bg-primary text-background font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/25 active:scale-[0.98] font-stack-sans-text"
                   >
                     Approve Order
                   </button>
@@ -187,7 +187,7 @@ export default function CustomerPage() {
           {/* Approved Orders History */}
           {approvedOrders.length > 0 && (
             <div className="animate-fade-in" style={{ animationDelay: "0.2s" }}>
-              <div className="p-6 rounded-xl border border-primary/20 bg-background/5">
+              <div className="p-6 rounded-2xl border border-foreground/15 bg-background/10 ring-1 ring-foreground/5">
                 <h3 className="text-lg font-bold mb-4 text-foreground font-stack-sans-text">
                   Your Recent Approvals
                 </h3>
@@ -195,7 +195,7 @@ export default function CustomerPage() {
                   {approvedOrders.map((order, i) => (
                     <div
                       key={i}
-                      className="p-4 rounded-lg border border-foreground/20 bg-background hover:border-primary/40 transition-all duration-300 flex items-center justify-between"
+                      className="p-4 rounded-2xl border border-foreground/15 bg-background/10 ring-1 ring-foreground/5 hover:ring-primary/30 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 flex items-center justify-between"
                     >
                       <div>
                         <div className="text-sm font-semibold text-foreground font-stack-sans-text">
@@ -231,7 +231,7 @@ export default function CustomerPage() {
 
             <div className="relative">
               {/* Connection Line */}
-              <div className="absolute top-8 left-8 right-8 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent hidden md:block" />
+              <div className="absolute top-8 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-primary/40 to-transparent hidden md:block" />
 
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
@@ -265,13 +265,13 @@ export default function CustomerPage() {
                     className="group relative animate-fade-in"
                     style={{ animationDelay: `${i * 0.1 + 0.3}s` }}
                   >
-                    <div className="relative p-6 rounded-xl border border-foreground/20 bg-background/20 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10">
+                    <div className="relative p-6 rounded-2xl border border-foreground/15 bg-background/10 ring-1 ring-foreground/5 hover:ring-primary/30 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10">
                       {/* Step Number */}
                       <div className="flex items-center gap-3 mb-4">
-                        <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-background text-sm font-stack-sans-text font-bold">
+                        <div className="relative flex items-center justify-center w-10 h-10 rounded-full bg-primary text-background text-sm font-stack-sans-text font-bold shadow-lg shadow-primary/30">
                           {workflow.step}
                         </div>
-                        <div className="text-2xl text-primary/60">{workflow.icon}</div>
+                        <div className="text-2xl text-primary/70">{workflow.icon}</div>
                       </div>
 
                       {/* Content */}

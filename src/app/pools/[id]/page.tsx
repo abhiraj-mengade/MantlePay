@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, use } from "react";
 import Link from "next/link";
 import { ArrowLeft, DollarSign, TrendingUp } from "lucide-react";
 
@@ -31,7 +31,8 @@ type ReceivablePool = {
   receivables: Receivable[];
 };
 
-export default function PoolDetail({ params }: { params: { id: string } }) {
+export default function PoolDetail({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [selectedTranche, setSelectedTranche] = useState<"senior" | "junior">("senior");
   const [investAmount, setInvestAmount] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -44,7 +45,7 @@ export default function PoolDetail({ params }: { params: { id: string } }) {
   // Mock pool data
   const pool: ReceivablePool = useMemo(
     () => ({
-      id: params.id,
+      id,
       name: "Receivables Pool Alpha",
       description: "High-quality short-term receivables with 30-60 day maturity",
       totalValue: 500000,
@@ -70,7 +71,7 @@ export default function PoolDetail({ params }: { params: { id: string } }) {
         status: "active",
       })),
     }),
-    [params.id],
+    [id],
   );
 
   const totalFunded = pool.seniorTranche.funded + pool.juniorTranche.funded;

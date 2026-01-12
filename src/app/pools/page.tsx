@@ -127,7 +127,7 @@ export default function Pools() {
             className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16 animate-fade-in"
             style={{ animationDelay: "0.1s" }}
           >
-            <div className="p-6 rounded-xl border border-foreground/20 bg-foreground/5 hover:border-primary/30 hover:bg-primary/5 transition-all duration-300 hover:scale-[1.01]">
+            <div className="p-6 rounded-2xl border border-foreground/15 bg-background/10 ring-1 ring-foreground/5 hover:ring-primary/30 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10">
               <p className="text-xs text-foreground/60 uppercase tracking-wide mb-2 font-stack-sans-text">
                 Total Pools
               </p>
@@ -136,7 +136,7 @@ export default function Pools() {
               </p>
             </div>
 
-            <div className="p-6 rounded-xl border border-foreground/20 bg-foreground/5 hover:border-primary/30 hover:bg-primary/5 transition-all duration-300 hover:scale-[1.01]">
+            <div className="p-6 rounded-2xl border border-foreground/15 bg-background/10 ring-1 ring-foreground/5 hover:ring-primary/30 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10">
               <p className="text-xs text-foreground/60 uppercase tracking-wide mb-2 font-stack-sans-text">
                 Total Value
               </p>
@@ -145,7 +145,7 @@ export default function Pools() {
               </p>
             </div>
 
-            <div className="p-6 rounded-xl border border-foreground/20 bg-foreground/5 hover:border-primary/30 hover:bg-primary/5 transition-all duration-300 hover:scale-[1.01]">
+            <div className="p-6 rounded-2xl border border-foreground/15 bg-background/10 ring-1 ring-foreground/5 hover:ring-primary/30 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10">
               <p className="text-xs text-foreground/60 uppercase tracking-wide mb-2 font-stack-sans-text">
                 Total Funded
               </p>
@@ -154,7 +154,7 @@ export default function Pools() {
               </p>
             </div>
 
-            <div className="p-6 rounded-xl border border-foreground/20 bg-foreground/5 hover:border-primary/30 hover:bg-primary/5 transition-all duration-300 hover:scale-[1.01]">
+            <div className="p-6 rounded-2xl border border-foreground/15 bg-background/10 ring-1 ring-foreground/5 hover:ring-primary/30 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10">
               <p className="text-xs text-foreground/60 uppercase tracking-wide mb-2 font-stack-sans-text">
                 Avg APY
               </p>
@@ -197,7 +197,7 @@ export default function Pools() {
                         className="group block animate-fade-in"
                         style={{ animationDelay: `${0.3 + index * 0.1}s` }}
                       >
-                        <div className="p-6 rounded-xl border border-foreground/20 bg-background/5 hover:border-primary/30 hover:bg-primary/5 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10 h-full">
+                        <div className="p-6 rounded-2xl border border-foreground/15 bg-background/10 ring-1 ring-foreground/5 hover:ring-primary/30 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10 h-full">
                           <div className="flex items-start justify-between mb-4">
                             <h3 className="text-lg font-bold text-foreground font-stack-sans-text">
                               {pool.name}
@@ -300,7 +300,7 @@ export default function Pools() {
                     <button
                       onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                       disabled={currentPage === 1}
-                      className="px-4 py-2 rounded-lg border border-foreground/20 bg-foreground/5 hover:bg-foreground/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-stack-sans-text font-semibold"
+                      className="px-4 py-2 rounded-full border border-foreground/20 bg-foreground/5 hover:bg-foreground/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-stack-sans-text font-semibold"
                     >
                       Previous
                     </button>
@@ -309,9 +309,9 @@ export default function Pools() {
                         <button
                           key={i}
                           onClick={() => setCurrentPage(i + 1)}
-                          className={`px-3 py-2 rounded-lg font-semibold font-stack-sans-text text-sm transition-all duration-300 ${
+                          className={`px-3 py-2 rounded-full font-semibold font-stack-sans-text text-sm transition-all duration-300 ${
                             currentPage === i + 1
-                              ? "bg-primary text-background"
+                              ? "bg-primary text-background shadow-lg shadow-primary/20"
                               : "border border-foreground/20 bg-foreground/5 hover:bg-foreground/10"
                           }`}
                         >
@@ -322,7 +322,7 @@ export default function Pools() {
                     <button
                       onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
                       disabled={currentPage === totalPages}
-                      className="px-4 py-2 rounded-lg border border-foreground/20 bg-foreground/5 hover:bg-foreground/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-stack-sans-text font-semibold"
+                      className="px-4 py-2 rounded-full border border-foreground/20 bg-foreground/5 hover:bg-foreground/10 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-stack-sans-text font-semibold"
                     >
                       Next
                     </button>
@@ -334,7 +334,7 @@ export default function Pools() {
 
           {/* Information Section */}
           <div
-            className="mt-24 p-4 rounded-2xl border border-primary/20 bg-background/5 animate-fade-in"
+            className="mt-24 p-4 rounded-2xl border border-foreground/15 bg-background/10 ring-1 ring-foreground/5 animate-fade-in"
             style={{ animationDelay: "0.4s" }}
           >
             <div className="text-center mb-8">
@@ -347,7 +347,7 @@ export default function Pools() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="p-6 rounded-xl border border-foreground/20 bg-background hover:border-primary/30 hover:bg-primary/5 transition-all duration-300">
+              <div className="p-6 rounded-2xl border border-foreground/15 bg-background/10 ring-1 ring-foreground/5 hover:ring-primary/30 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-2 h-2 rounded-full bg-primary"></div>
                   <h4 className="font-bold text-lg font-stack-sans-text">Senior Tranche</h4>
@@ -371,7 +371,7 @@ export default function Pools() {
                 </ul>
               </div>
 
-              <div className="p-6 rounded-xl border border-foreground/20 bg-background hover:border-primary/30 hover:bg-primary/5 transition-all duration-300">
+              <div className="p-6 rounded-2xl border border-foreground/15 bg-background/10 ring-1 ring-foreground/5 hover:ring-primary/30 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300">
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-2 h-2 rounded-full bg-primary"></div>
                   <h4 className="font-bold text-lg font-stack-sans-text">Junior Tranche</h4>

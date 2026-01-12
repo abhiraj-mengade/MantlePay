@@ -73,9 +73,11 @@ export default function Home() {
           <div className="max-w-4xl mx-auto">
             <div className="text-center space-y-8">
               {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-3 py-2 rounded-full border border-primary/30 bg-primary/10 text-sm text-foreground/90 font-stack-sans-text font-medium animate-fade-in">
-                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                <span>Live on Mantle Testnet</span>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-primary/20 bg-foreground/5 text-sm text-foreground/80 font-stack-sans-text font-medium animate-fade-in shadow-sm backdrop-blur">
+                <div className="relative w-1.5 h-1.5 rounded-full bg-primary">
+                  <div className="absolute inset-0 rounded-full animate-ping bg-primary/40" />
+                </div>
+                <span className="tracking-wide">Live on Mantle Testnet</span>
               </div>
 
               {/* Main Headline */}
@@ -104,15 +106,16 @@ export default function Home() {
               >
                 <Link
                   href="/merchant"
-                  className="group relative px-8 py-3 rounded-lg bg-primary text-background font-semibold overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98] hover:brightness-110 font-stack-sans-text"
+                  className="group relative px-8 py-3 rounded-full bg-primary text-background font-semibold overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/25 active:scale-[0.98] font-stack-sans-text"
                 >
                   <span className="relative z-10">Start as Merchant</span>
+                  <span className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-background/10 to-transparent" />
                 </Link>
                 <Link
                   href="/pools"
-                  className="px-8 py-3 rounded-lg border border-primary hover:border-primary hover:bg-primary/10 font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10 active:scale-[0.98] text-primary font-stack-sans-text"
+                  className="relative px-8 py-3 rounded-full border border-primary/30 bg-background/10 font-semibold transition-all duration-300 hover:scale-[1.02] hover:border-primary/60 hover:bg-primary/10 active:scale-[0.98] text-primary font-stack-sans-text"
                 >
-                  Browse Pools
+                  <span>Browse Pools</span>
                 </Link>
               </div>
             </div>
@@ -135,7 +138,7 @@ export default function Home() {
 
           <div className="relative">
             {/* Connection Line */}
-            <div className="absolute top-8 left-8 right-8 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent hidden md:block" />
+            <div className="absolute top-8 left-8 right-8 h-[1px] bg-gradient-to-r from-transparent via-primary/40 to-transparent hidden md:block" />
 
             <div className="grid md:grid-cols-3 gap-8">
               {workflows.map((workflow, i) => (
@@ -144,13 +147,13 @@ export default function Home() {
                   className="group relative animate-fade-in"
                   style={{ animationDelay: `${i * 0.1}s` }}
                 >
-                  <div className="relative p-6 rounded-xl border border-foreground/20 bg-background/20 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10">
+                  <div className="relative p-6 rounded-2xl border border-foreground/15 bg-background/10 ring-1 ring-foreground/5 hover:ring-primary/30 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10">
                     {/* Step Number */}
                     <div className="flex items-center gap-3 mb-4">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-background text-sm font-stack-sans-text font-bold">
+                      <div className="relative flex items-center justify-center w-10 h-10 rounded-full bg-primary text-background text-sm font-stack-sans-text font-bold shadow-lg shadow-primary/30">
                         {workflow.step}
                       </div>
-                      <div className="text-2xl text-primary/60">{workflow.icon}</div>
+                      <div className="text-2xl text-primary/70">{workflow.icon}</div>
                     </div>
 
                     {/* Content */}
@@ -187,9 +190,10 @@ export default function Home() {
             ].map((section, i) => (
               <div
                 key={i}
-                className="p-8 rounded-xl border border-foreground/20 bg-background/20 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10 animate-fade-in"
+                className="relative p-8 rounded-2xl border border-foreground/15 bg-gradient-to-b from-foreground/5 via-background/10 to-background/0 ring-1 ring-foreground/5 hover:ring-primary/30 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-primary/10 animate-fade-in"
                 style={{ animationDelay: `${i * 0.1}s` }}
               >
+                <div className="absolute top-4 right-4 w-2 h-2 rounded-full bg-primary/70" />
                 <h3
                   className="text-2xl font-bold mb-3 text-foreground"
                   style={{ fontFamily: "var(--font-outfit)" }}
@@ -219,8 +223,9 @@ export default function Home() {
         </div>
       </section>
       <section className="container mx-auto px-6 py-24">
-        <div className="max-w-5xl mx-auto text-center animate-fade-in bg-primary/5">
-          <div className="p-12 rounded-2xl border border-primary/50 bg-background/10">
+        <div className="max-w-5xl mx-auto text-center animate-fade-in">
+          <div className="relative overflow-hidden p-12 rounded-2xl border border-primary/30 bg-background/10">
+            <div className="absolute inset-0 opacity-20 bg-gradient-to-br from-primary/20 via-transparent to-primary/20" />
             <h2
               className="text-3xl font-bold mb-4 text-primary"
               style={{ fontFamily: "var(--font-outfit)" }}
@@ -233,7 +238,7 @@ export default function Home() {
             <div className="flex items-center justify-center gap-4">
               <Link
                 href="/merchant"
-                className="px-8 py-3 rounded-lg bg-primary text-background font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98] hover:brightness-110 font-stack-sans-text"
+                className="px-8 py-3 rounded-full bg-primary text-background font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/25 active:scale-[0.98] font-stack-sans-text"
               >
                 Launch App
               </Link>
@@ -241,7 +246,7 @@ export default function Home() {
                 href="https://docs.mantle.xyz"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-8 py-3 rounded-lg border border-primary hover:border-primary hover:bg-primary/10 font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10 active:scale-[0.98] text-primary font-stack-sans-text"
+                className="px-8 py-3 rounded-full border border-primary/30 bg-background/10 font-semibold transition-all duration-300 hover:scale-[1.02] hover:border-primary/60 hover:bg-primary/10 active:scale-[0.98] text-primary font-stack-sans-text"
               >
                 Documentation
               </a>
