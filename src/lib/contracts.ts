@@ -66,6 +66,13 @@ export const RECEIPT_NFT_ABI = [
     stateMutability: "nonpayable",
     type: "function",
   },
+  {
+    inputs: [{ name: "tokenId", type: "uint256" }],
+    name: "getApproved",
+    outputs: [{ name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
 ] as const;
 
 // TrancheToken ABI

@@ -115,7 +115,7 @@ export default function PoolDetail({ params }: { params: Promise<{ id: string }>
 
       setTxStatus("success");
       setTxMessage("Investment successful!");
-      setInvestAmount("");
+    setInvestAmount("");
       refetch();
 
       setTimeout(() => {
@@ -406,87 +406,87 @@ export default function PoolDetail({ params }: { params: Promise<{ id: string }>
                   </div>
                 ) : (
                   <>
-                    {/* Tranche Selection */}
-                    <div className="grid grid-cols-2 gap-4 mb-6">
-                      <button
-                        onClick={() => setSelectedTranche("senior")}
-                        className={`p-6 rounded-xl border transition-all duration-300 ${
-                          selectedTranche === "senior"
-                            ? "border-primary bg-primary/10 shadow-lg shadow-primary/10"
-                            : "border-foreground/20 bg-background hover:border-primary/30 hover:bg-primary/5"
-                        }`}
-                      >
-                        <div className="text-left">
-                          <h3 className="font-bold text-lg mb-2 text-foreground font-stack-sans-text">
-                            Senior Tranche
-                          </h3>
-                          <div className="space-y-2 text-sm">
-                            <p className="text-foreground/60 font-stack-sans-text">
-                              Lower risk, stable returns
-                            </p>
-                            <p className="text-2xl font-bold text-primary font-stack-sans-text">
+                {/* Tranche Selection */}
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <button
+                    onClick={() => setSelectedTranche("senior")}
+                    className={`p-6 rounded-xl border transition-all duration-300 ${
+                      selectedTranche === "senior"
+                        ? "border-primary bg-primary/10 shadow-lg shadow-primary/10"
+                        : "border-foreground/20 bg-background hover:border-primary/30 hover:bg-primary/5"
+                    }`}
+                  >
+                    <div className="text-left">
+                      <h3 className="font-bold text-lg mb-2 text-foreground font-stack-sans-text">
+                        Senior Tranche
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        <p className="text-foreground/60 font-stack-sans-text">
+                          Lower risk, stable returns
+                        </p>
+                        <p className="text-2xl font-bold text-primary font-stack-sans-text">
                               {poolStats?.seniorAPY.toFixed(1)}% APY
-                            </p>
-                            <div className="pt-2 border-t border-foreground/10">
-                              <div className="flex justify-between text-xs mb-1">
-                                <span className="text-foreground/60 font-stack-sans-text">
-                                  Progress
-                                </span>
-                                <span className="font-semibold text-foreground font-stack-sans-text">
+                        </p>
+                        <div className="pt-2 border-t border-foreground/10">
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="text-foreground/60 font-stack-sans-text">
+                              Progress
+                            </span>
+                            <span className="font-semibold text-foreground font-stack-sans-text">
                                   {poolStats?.seniorProgress.toFixed(1)}%
-                                </span>
-                              </div>
-                              <div className="w-full bg-foreground/10 rounded-full h-1.5">
-                                <div
-                                  className="bg-primary h-full rounded-full"
-                                  style={{
+                            </span>
+                          </div>
+                          <div className="w-full bg-foreground/10 rounded-full h-1.5">
+                            <div
+                              className="bg-primary h-full rounded-full"
+                              style={{
                                     width: `${Math.min(poolStats?.seniorProgress || 0, 100)}%`,
-                                  }}
-                                ></div>
-                              </div>
+                              }}
+                            ></div>
+                          </div>
                               <p className="text-xs text-foreground/50 mt-1 font-stack-sans-text">
                                 {poolStats?.seniorRaised} / {poolStats?.seniorTarget} MNT
                               </p>
-                            </div>
-                          </div>
                         </div>
-                      </button>
+                      </div>
+                    </div>
+                  </button>
 
-                      <button
-                        onClick={() => setSelectedTranche("junior")}
-                        className={`p-6 rounded-xl border transition-all duration-300 ${
-                          selectedTranche === "junior"
-                            ? "border-primary bg-primary/10 shadow-lg shadow-primary/10"
-                            : "border-foreground/20 bg-background hover:border-primary/30 hover:bg-primary/5"
-                        }`}
-                      >
-                        <div className="text-left">
-                          <h3 className="font-bold text-lg mb-2 text-foreground font-stack-sans-text">
-                            Junior Tranche
-                          </h3>
-                          <div className="space-y-2 text-sm">
-                            <p className="text-foreground/60 font-stack-sans-text">
-                              Higher risk, higher returns
-                            </p>
-                            <p className="text-2xl font-bold text-primary font-stack-sans-text">
+                  <button
+                    onClick={() => setSelectedTranche("junior")}
+                    className={`p-6 rounded-xl border transition-all duration-300 ${
+                      selectedTranche === "junior"
+                        ? "border-primary bg-primary/10 shadow-lg shadow-primary/10"
+                        : "border-foreground/20 bg-background hover:border-primary/30 hover:bg-primary/5"
+                    }`}
+                  >
+                    <div className="text-left">
+                      <h3 className="font-bold text-lg mb-2 text-foreground font-stack-sans-text">
+                        Junior Tranche
+                      </h3>
+                      <div className="space-y-2 text-sm">
+                        <p className="text-foreground/60 font-stack-sans-text">
+                          Higher risk, higher returns
+                        </p>
+                        <p className="text-2xl font-bold text-primary font-stack-sans-text">
                               {poolStats?.juniorAPY.toFixed(1)}% APY
-                            </p>
-                            <div className="pt-2 border-t border-foreground/10">
-                              <div className="flex justify-between text-xs mb-1">
-                                <span className="text-foreground/60 font-stack-sans-text">
-                                  Progress
-                                </span>
-                                <span className="font-semibold text-foreground font-stack-sans-text">
+                        </p>
+                        <div className="pt-2 border-t border-foreground/10">
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="text-foreground/60 font-stack-sans-text">
+                              Progress
+                            </span>
+                            <span className="font-semibold text-foreground font-stack-sans-text">
                                   {poolStats?.juniorProgress.toFixed(1)}%
-                                </span>
-                              </div>
-                              <div className="w-full bg-foreground/10 rounded-full h-1.5">
-                                <div
-                                  className="bg-primary h-full rounded-full"
-                                  style={{
+                            </span>
+                          </div>
+                          <div className="w-full bg-foreground/10 rounded-full h-1.5">
+                            <div
+                              className="bg-primary h-full rounded-full"
+                              style={{
                                     width: `${Math.min(poolStats?.juniorProgress || 0, 100)}%`,
-                                  }}
-                                ></div>
+                              }}
+                            ></div>
                               </div>
                               <p className="text-xs text-foreground/50 mt-1 font-stack-sans-text">
                                 {poolStats?.juniorRaised} / {poolStats?.juniorTarget} MNT
@@ -494,32 +494,32 @@ export default function PoolDetail({ params }: { params: Promise<{ id: string }>
                             </div>
                           </div>
                         </div>
-                      </button>
-                    </div>
+                  </button>
+                </div>
 
-                    {/* Investment Amount */}
-                    <form onSubmit={handleInvest} className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-semibold mb-2 text-foreground font-stack-sans-text">
-                          Investment Amount (MNT)
-                        </label>
-                        <input
-                          type="number"
-                          value={investAmount}
-                          onChange={(e) => setInvestAmount(e.target.value)}
-                          required
+                {/* Investment Amount */}
+                <form onSubmit={handleInvest} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-semibold mb-2 text-foreground font-stack-sans-text">
+                      Investment Amount (MNT)
+                    </label>
+                    <input
+                      type="number"
+                      value={investAmount}
+                      onChange={(e) => setInvestAmount(e.target.value)}
+                      required
                           step="0.0001"
-                          min="0"
-                          placeholder="0.00"
-                          className="w-full px-4 py-3 rounded-lg border border-foreground/20 bg-background text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-stack-sans-text"
-                        />
-                      </div>
+                      min="0"
+                      placeholder="0.00"
+                      className="w-full px-4 py-3 rounded-lg border border-foreground/20 bg-background text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-stack-sans-text"
+                    />
+                  </div>
 
-                      <button
-                        type="submit"
+                  <button
+                    type="submit"
                         disabled={isPending || !investAmount}
                         className="w-full px-6 py-3 rounded-lg bg-primary text-background font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98] hover:brightness-110 font-stack-sans-text disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                      >
+                  >
                         {isPending ? (
                           <>
                             <Loader2 className="w-5 h-5 animate-spin" />
@@ -528,8 +528,8 @@ export default function PoolDetail({ params }: { params: Promise<{ id: string }>
                         ) : (
                           `Invest in ${selectedTranche === "senior" ? "Senior" : "Junior"} Tranche`
                         )}
-                      </button>
-                    </form>
+                  </button>
+                </form>
                   </>
                 )}
               </div>
@@ -578,32 +578,32 @@ export default function PoolDetail({ params }: { params: Promise<{ id: string }>
                     <span className="font-semibold text-foreground font-stack-sans-text">
                       {formatMNT(pool.totalRepaid)} MNT
                     </span>
-                  </div>
-                </div>
               </div>
+            </div>
+          </div>
 
               {/* Contract Addresses */}
-              <div
-                className="p-6 rounded-xl border border-primary/20 bg-background/5 animate-fade-in"
-                style={{ animationDelay: "0.5s" }}
-              >
+          <div
+            className="p-6 rounded-xl border border-primary/20 bg-background/5 animate-fade-in"
+            style={{ animationDelay: "0.5s" }}
+          >
                 <h3 className="font-bold text-lg mb-4 text-foreground font-stack-sans-text">
                   Tranche Tokens
                 </h3>
                 <div className="space-y-3 text-sm">
-                  <div>
+                      <div>
                     <p className="text-foreground/60 font-stack-sans-text mb-1">Senior Token</p>
                     <p className="font-mono text-xs text-foreground break-all">
                       {pool.seniorToken}
-                    </p>
-                  </div>
-                  <div>
+                        </p>
+                      </div>
+                      <div>
                     <p className="text-foreground/60 font-stack-sans-text mb-1">Junior Token</p>
                     <p className="font-mono text-xs text-foreground break-all">
                       {pool.juniorToken}
-                    </p>
+                        </p>
                   </div>
-                </div>
+            </div>
               </div>
             </div>
           </div>

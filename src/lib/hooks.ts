@@ -85,6 +85,28 @@ export function useTrancheBalance(tokenAddress: string, account: string) {
   });
 }
 
+// Hook to get NFT approval status
+export function useNFTApproval(tokenId: bigint) {
+  const contract = getReceiptNFTContract();
+  
+  return useReadContract({
+    contract,
+    method: "getApproved" as const,
+    params: [tokenId],
+  });
+}
+
+// Hook to get NFT owner
+export function useNFTOwner(tokenId: bigint) {
+  const contract = getReceiptNFTContract();
+  
+  return useReadContract({
+    contract,
+    method: "ownerOf" as const,
+    params: [tokenId],
+  });
+}
+
 // Pool data type
 export type PoolData = {
   id: number;
@@ -286,6 +308,44 @@ export function useCreatePool() {
   };
   
   return { createPool, isPending, error };
+}
+
+// Helper function to find NFTs owned by an address
+export async function findOwnedNFTs(ownerAddress: string, maxTokenId?: bigint): Promise<bigint[]> {
+  const contract = getReceiptNFTContract();
+  const { readContract } = await import("thirdweb");
+  
+  const ownedTokens: bigint[] = [];
+  
+  // Get nextId to know the range
+  const nextId = (await readContract({
+    contract,
+    method: "nextId" as const,
+    params: [],
+  })) as bigint;
+  
+  const maxId = maxTokenId || nextId;
+  const checkLimit = Number(maxId) > 100 ? 100 : Number(maxId); // Limit to 100 checks for performance
+  
+  // Check tokens from 0 to maxId (or nextId)
+  for (let i = 0; i < checkLimit; i++) {
+    try {
+      const tokenOwner = (await readContract({
+        contract,
+        method: "ownerOf" as const,
+        params: [BigInt(i)],
+      })) as string;
+      
+      if (tokenOwner.toLowerCase() === ownerAddress.toLowerCase()) {
+        ownedTokens.push(BigInt(i));
+      }
+    } catch (error) {
+      // Token doesn't exist or error, skip
+      continue;
+    }
+  }
+  
+  return ownedTokens;
 }
 
 // Check if contracts are deployed
