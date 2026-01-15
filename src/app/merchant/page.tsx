@@ -56,6 +56,55 @@ export default function Merchant() {
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 5;
 
+  // Load orders from localStorage on mount
+  useEffect(() => {
+    const savedOrders = localStorage.getItem("merchantOrders");
+    if (savedOrders) {
+      try {
+        const parsed = JSON.parse(savedOrders);
+        // Convert date strings back to Date objects
+        const ordersWithDates = parsed.map((order: any) => ({
+          ...order,
+          createDate: new Date(order.createDate),
+          dueDate: new Date(order.dueDate),
+        }));
+        setOrders(ordersWithDates);
+      } catch (error) {
+        console.error("Failed to load orders from localStorage:", error);
+      }
+    }
+  }, []);
+
+  // Save orders to localStorage whenever orders change
+  useEffect(() => {
+    if (orders.length > 0) {
+      localStorage.setItem("merchantOrders", JSON.stringify(orders));
+    }
+  }, [orders]);
+
+  // Match NFT token ID to order by checking which orders might correspond
+  // Since NFTs are minted sequentially, we can estimate based on order creation time
+  const findOrderForNFT = (tokenId: string): MerchantOrder | null => {
+    const tokenIdNum = parseInt(tokenId);
+    
+    // Try to find order that matches:
+    // 1. Orders with status "minted" first
+    // 2. Then by creation order (assuming NFTs are minted in order)
+    const mintedOrders = orders.filter(o => o.status === "minted");
+    if (mintedOrders.length > 0 && tokenIdNum <= mintedOrders.length) {
+      // If we have minted orders, assume they correspond sequentially
+      const sortedMinted = mintedOrders.sort((a, b) => a.createDate.getTime() - b.createDate.getTime());
+      return sortedMinted[tokenIdNum - 1] || null;
+    }
+    
+    // Fallback: use most recent order with amount
+    const recentOrder = orders
+      .filter(order => order.amount > 0)
+      .sort((a, b) => b.createDate.getTime() - a.createDate.getTime())[0];
+    
+    return recentOrder || null;
+  };
+
   const contractsDeployed = areContractsDeployed();
   const receiptNFTContract = getReceiptNFTContract();
   const cascadeContract = getCascadeProtocolContract();
@@ -156,17 +205,58 @@ export default function Merchant() {
   };
 
   const handlePoolFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPoolForm({ ...poolForm, [e.target.name]: e.target.value });
+    const newForm = { ...poolForm, [e.target.name]: e.target.value };
+    
+    // Auto-calculate Investor Return (C) when Receivable Value or discounts change
+    if (e.target.name === "receivableValue" || e.target.name === "seniorDiscBPS" || e.target.name === "juniorDiscBPS") {
+      const receivableValue = parseFloat(newForm.receivableValue) || 0;
+      if (receivableValue > 0) {
+        // Calculate C: Typically C = R * interest_rate
+        // Using a standard formula: C = (R - A) * multiplier, where A = 0.8R
+        // Or simpler: C = R * interest_rate (e.g., 5% = 0.05)
+        // For receivables financing, a common rate is 5-10% of R
+        const interestRate = 0.05; // 5% default interest rate
+        const investorReturn = receivableValue * interestRate;
+        newForm.investorReturn = investorReturn.toFixed(4);
+      }
+    }
+    
+    setPoolForm(newForm);
+  };
+
+  // Calculate investor return based on receivable value and discounts
+  const calculateInvestorReturn = (receivableValue: number, seniorDiscBPS: number, juniorDiscBPS: number): number => {
+    if (receivableValue <= 0) return 0;
+    
+    // Standard formula: C = R * interest_rate
+    // Using 5% as default interest rate (can be adjusted)
+    const interestRate = 0.05;
+    return receivableValue * interestRate;
   };
 
   const openPoolForm = (tokenId: string) => {
     setSelectedNFTTokenId(tokenId);
+    
+    // Find matching order for this NFT
+    const matchingOrder = findOrderForNFT(tokenId);
+    let receivableValue = "";
+    
+    if (matchingOrder) {
+      receivableValue = matchingOrder.amount.toString();
+    }
+    
+    const seniorDiscBPS = "100";
+    const juniorDiscBPS = "1200";
+    const investorReturn = receivableValue 
+      ? calculateInvestorReturn(parseFloat(receivableValue), parseInt(seniorDiscBPS), parseInt(juniorDiscBPS)).toFixed(4)
+      : "";
+    
     setPoolForm({
       tokenId,
-      receivableValue: "",
-      investorReturn: "",
-      seniorDiscBPS: "100",
-      juniorDiscBPS: "1200",
+      receivableValue,
+      investorReturn,
+      seniorDiscBPS,
+      juniorDiscBPS,
     });
     setShowPoolForm(true);
   };
@@ -191,13 +281,21 @@ export default function Merchant() {
     try {
       // Validate inputs
       if (!poolForm.receivableValue || parseFloat(poolForm.receivableValue) <= 0) {
-        alert("Receivable value must be greater than 0");
+        alert("Receivable value (R) must be greater than 0. Please enter a valid amount.");
         setIsCreatingPool(false);
         return;
       }
       
       if (!poolForm.investorReturn || parseFloat(poolForm.investorReturn) <= 0) {
-        alert("Investor return must be greater than 0");
+        alert("Investor return (C) must be greater than 0. It will be auto-calculated when you enter the receivable value.");
+        setIsCreatingPool(false);
+        return;
+      }
+      
+      // Additional validation: ensure receivable value is reasonable
+      const receivableValue = parseFloat(poolForm.receivableValue);
+      if (receivableValue < 0.0001) {
+        alert("Receivable value is too small. Minimum is 0.0001 MNT");
         setIsCreatingPool(false);
         return;
       }
@@ -627,43 +725,7 @@ export default function Merchant() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold text-foreground mb-2 font-stack-sans-text">
-                  Receivable Value (MNT)
-                </label>
-                <input
-                  type="number"
-                  name="receivableValue"
-                  value={poolForm.receivableValue}
-                  onChange={handlePoolFormChange}
-                  required
-                  step="0.0001"
-                  min="0"
-                  placeholder="Total invoice value"
-                  className="w-full px-4 py-3 rounded-lg border border-foreground/20 bg-background text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-stack-sans-text"
-                />
-                <p className="text-xs text-foreground/50 mt-1 font-stack-sans-text">
-                  You&apos;ll receive 80% ({poolForm.receivableValue ? (parseFloat(poolForm.receivableValue) * 0.8).toFixed(4) : "0"} MNT) as advance
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-foreground mb-2 font-stack-sans-text">
-                  Investor Return (MNT)
-                </label>
-                <input
-                  type="number"
-                  name="investorReturn"
-                  value={poolForm.investorReturn}
-                  onChange={handlePoolFormChange}
-                  required
-                  step="0.0001"
-                  min="0"
-                  placeholder="Total interest for investors"
-                  className="w-full px-4 py-3 rounded-lg border border-foreground/20 bg-background text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-stack-sans-text"
-                />
-              </div>
-
+              {/* Discount Fields - Moved to Top */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-foreground mb-2 font-stack-sans-text">
@@ -701,6 +763,62 @@ export default function Merchant() {
                     {(parseInt(poolForm.juniorDiscBPS) / 100 || 0).toFixed(2)}% discount
                   </p>
                 </div>
+              </div>
+
+              {/* Investor Return - Highlighted, Auto-calculated */}
+              <div className="bg-primary/10 border-2 border-primary/30 rounded-lg p-4">
+                <label className="block text-sm font-semibold text-primary mb-2 font-stack-sans-text">
+                  Investor Return (C) - Auto-calculated
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    name="investorReturn"
+                    value={poolForm.investorReturn}
+                    onChange={handlePoolFormChange}
+                    required
+                    step="0.0001"
+                    min="0"
+                    placeholder="Total interest for investors"
+                    className="flex-1 px-4 py-3 rounded-lg border-2 border-primary/50 bg-background text-primary font-bold placeholder:text-primary/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-stack-sans-text"
+                  />
+                  <span className="text-2xl font-bold text-primary font-stack-sans-text">
+                    {poolForm.investorReturn ? parseFloat(poolForm.investorReturn).toFixed(4) : "0.0000"} MNT
+                  </span>
+                </div>
+                <p className="text-xs text-primary/70 mt-2 font-stack-sans-text">
+                  💡 Calculated as 5% of Receivable Value (C = R × 0.05)
+                </p>
+              </div>
+
+              {/* Receivable Value - Auto-populated from order */}
+              <div>
+                <label className="block text-sm font-semibold text-foreground mb-2 font-stack-sans-text">
+                  Receivable Value (R) - From Order
+                </label>
+                <input
+                  type="number"
+                  name="receivableValue"
+                  value={poolForm.receivableValue}
+                  onChange={handlePoolFormChange}
+                  required
+                  step="0.0001"
+                  min="0.0001"
+                  placeholder="Total invoice value (auto-filled from order)"
+                  className="w-full px-4 py-3 rounded-lg border border-foreground/20 bg-background text-foreground placeholder:text-foreground/40 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all font-stack-sans-text"
+                />
+                {poolForm.receivableValue && (
+                  <div className="mt-2 p-2 rounded bg-foreground/5 border border-foreground/10">
+                    <p className="text-xs text-foreground/70 font-stack-sans-text">
+                      ✅ Auto-filled from order. You&apos;ll receive 80% ({poolForm.receivableValue ? (parseFloat(poolForm.receivableValue) * 0.8).toFixed(4) : "0"} MNT) as advance
+                    </p>
+                  </div>
+                )}
+                {!poolForm.receivableValue && (
+                  <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1 font-stack-sans-text">
+                    ⚠️ No matching order found. Please enter the receivable value manually.
+                  </p>
+                )}
               </div>
 
               <div className="flex gap-3 pt-4">
