@@ -144,15 +144,21 @@ export default function Merchant() {
           if (nfts.length > mintedOrderCount) {
             const ordersToMint = nfts.length - mintedOrderCount;
             const pendingOrders = prevOrders
-              .filter(o => o.status === "pending" || o.status === "approved")
+              .filter(o => o.status === "pending" || o.status === "approved" || o.status === "verified")
               .sort((a, b) => a.createDate.getTime() - b.createDate.getTime())
               .slice(0, ordersToMint);
             
             if (pendingOrders.length > 0) {
+              const orderIdsToMint = new Set(pendingOrders.map(o => o.orderId));
               const updatedOrders = prevOrders.map(order => {
-                const shouldMint = pendingOrders.some(po => po.orderId === order.orderId);
-                return shouldMint ? { ...order, status: "minted" as const } : order;
+                if (orderIdsToMint.has(order.orderId) && order.status !== "minted") {
+                  return { ...order, status: "minted" as const };
+                }
+                return order;
               });
+              
+              // Save to localStorage immediately to persist the change
+              localStorage.setItem("merchantOrders", JSON.stringify(updatedOrders));
               return updatedOrders;
             }
           }
@@ -166,9 +172,10 @@ export default function Merchant() {
       }
     };
 
+    // Load immediately
     loadNFTs();
-    // Refresh every 10 seconds
-    const interval = setInterval(loadNFTs, 10000);
+    // Refresh every 5 seconds to catch new NFTs faster
+    const interval = setInterval(loadNFTs, 5000);
     return () => clearInterval(interval);
   }, [account?.address, nextId]);
 
