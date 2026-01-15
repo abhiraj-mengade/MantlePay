@@ -20,54 +20,64 @@ export default function Pools() {
     params: [],
   });
 
-  // Fetch individual pools (we'll fetch pools 1 to poolCount)
+  // Fetch all pools dynamically
   // Note: Pool IDs start from 1 in the contract
   const poolIds = poolCount ? Array.from({ length: Number(poolCount) }, (_, i) => i + 1) : [];
 
-  // We need to fetch each pool individually
-  const { data: pool1Data } = useReadContract({
-    contract,
-    method: "pools" as const,
-    params: [BigInt(1)],
-  });
-
-  const { data: pool2Data } = useReadContract({
-    contract,
-    method: "pools" as const,
-    params: [BigInt(2)],
-  });
-
-  const { data: pool3Data } = useReadContract({
-    contract,
-    method: "pools" as const,
-    params: [BigInt(3)],
-  });
-
+  // Fetch all pools using readContract
   useEffect(() => {
-    if (!contractsDeployed || !poolCount) {
-      setPools([]);
-      return;
-    }
-
-    const fetchedPools: PoolData[] = [];
-    const poolDataArray = [pool1Data, pool2Data, pool3Data];
-
-    for (let i = 0; i < Math.min(Number(poolCount), 3); i++) {
-      const data = poolDataArray[i];
-      if (data && data[0] !== "0x0000000000000000000000000000000000000000") {
-        fetchedPools.push(parsePoolData(i + 1, data));
+    const fetchAllPools = async () => {
+      if (!contractsDeployed || !poolCount || poolIds.length === 0) {
+        setPools([]);
+        return;
       }
-    }
 
-    setPools(fetchedPools);
-  }, [contractsDeployed, poolCount, pool1Data, pool2Data, pool3Data]);
+      try {
+        const { readContract } = await import("thirdweb");
+        const fetchedPools: PoolData[] = [];
+
+        // Fetch all pools in parallel
+        const poolPromises = poolIds.map(async (poolId) => {
+          try {
+            const data = await readContract({
+              contract,
+              method: "pools" as const,
+              params: [BigInt(poolId)],
+            });
+
+            // Check if pool exists (merchant address is not zero)
+            if (data && data[0] !== "0x0000000000000000000000000000000000000000") {
+              return parsePoolData(poolId, data);
+            }
+            return null;
+          } catch (error) {
+            console.error(`Error fetching pool ${poolId}:`, error);
+            return null;
+          }
+        });
+
+        const results = await Promise.all(poolPromises);
+        const validPools = results.filter((pool): pool is PoolData => pool !== null);
+        
+        // Sort by pool ID (newest first)
+        validPools.sort((a, b) => b.id - a.id);
+        
+        setPools(validPools);
+      } catch (error) {
+        console.error("Error fetching pools:", error);
+        setPools([]);
+      }
+    };
+
+    fetchAllPools();
+  }, [contractsDeployed, poolCount, contract, poolIds.join(",")]);
 
   const isLoading = isLoadingCount;
 
   const calculateStats = () => {
     if (pools.length === 0) {
       return {
-        totalPools: 0,
+        totalPools: poolCount ? Number(poolCount) : 0,
         totalValue: "0",
         totalFunded: "0",
         avgAPY: "0",
@@ -86,10 +96,10 @@ export default function Pools() {
     });
 
     return {
-      totalPools: pools.length,
+      totalPools: poolCount ? Number(poolCount) : pools.length,
       totalValue: formatMNT(totalValueWei),
       totalFunded: formatMNT(totalFundedWei),
-      avgAPY: (totalAPY / pools.length).toFixed(1),
+      avgAPY: pools.length > 0 ? (totalAPY / pools.length).toFixed(1) : "0",
     };
   };
 
