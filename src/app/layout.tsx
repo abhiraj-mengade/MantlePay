@@ -6,8 +6,11 @@ import { Footer } from "@/components/footer";
 import { inter, lato, geist, outfit, comfortaa } from "@/utils/fonts";
 
 export const metadata: Metadata = {
-  title: "Mantle Pay",
+  title: "PayMantle",
   description: "Receivable financing reimagined on Mantle network",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({

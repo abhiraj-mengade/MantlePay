@@ -1,0 +1,16 @@
+<svg width="256" height="256" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="pm-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#16A34A" />
+      <stop offset="50%" stop-color="#22C55E" />
+      <stop offset="100%" stop-color="#4ADE80" />
+    </linearGradient>
+  </defs>
+  <rect x="16" y="16" width="224" height="224" rx="56" fill="#020617" />
+  <rect x="28" y="28" width="200" height="200" rx="48" fill="url(#pm-gradient)" />
+  <path
+    d="M70 170V86h28l22 34 22-34h28v84h-24v-50l-26 38-26-38v50H70z"
+    fill="#F9FAFB"
+  />
+</svg>
+
