@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
-import { ArrowLeft, DollarSign, TrendingUp, Loader2 } from "lucide-react";
+import { ArrowLeft, DollarSign, Loader2 } from "lucide-react";
 import { useReadContract, useActiveAccount } from "thirdweb/react";
 import {
   getCascadeProtocolContract,
@@ -21,7 +21,6 @@ export default function PoolDetail({ params }: { params: Promise<{ id: string }>
   const [selectedTranche, setSelectedTranche] = useState<"senior" | "junior">("senior");
   const [investAmount, setInvestAmount] = useState("");
   const [animatedTotalValue, setAnimatedTotalValue] = useState(0);
-  const [animatedTotalFunded, setAnimatedTotalFunded] = useState(0);
   const [animatedProgress, setAnimatedProgress] = useState(0);
   const [txStatus, setTxStatus] = useState<"idle" | "pending" | "success" | "error">("idle");
   const [txMessage, setTxMessage] = useState("");
@@ -51,52 +50,16 @@ export default function PoolDetail({ params }: { params: Promise<{ id: string }>
 
   const poolStats = pool ? calculatePoolStats(pool) : null;
 
-  // Animate pool stats when pool loads
+  // Set pool stats when pool loads (no animation to prevent fluctuation)
   useEffect(() => {
     if (!pool || !poolStats) return;
 
-    const duration = 1000;
-    const steps = 30;
-    const stepInterval = duration / steps;
-
-    // Total funded target (what investors are expected to fund)
+    // Total funded target (what investors are expected to fund) - this is the input value
     const totalFundTarget = Number(pool.seniorTargetRaise + pool.juniorTargetRaise) / 1e18;
-    // Advance amount A to merchant
-    const advanceAmount = Number(pool.advanceAmount) / 1e18;
+    setAnimatedTotalValue(totalFundTarget);
+
     const progress = poolStats.fundingProgress;
-
-    // Animate Total Funded (Target)
-    const totalValueIncrement = totalFundTarget / steps;
-    let totalValueStep = 0;
-    const totalValueInterval = setInterval(() => {
-      totalValueStep++;
-      setAnimatedTotalValue(Math.min(totalValueIncrement * totalValueStep, totalFundTarget));
-      if (totalValueStep >= steps) clearInterval(totalValueInterval);
-    }, stepInterval);
-
-    // Animate Advance Amount
-    const totalFundedIncrement = advanceAmount / steps;
-    let totalFundedStep = 0;
-    const totalFundedInterval = setInterval(() => {
-      totalFundedStep++;
-      setAnimatedTotalFunded(Math.min(totalFundedIncrement * totalFundedStep, advanceAmount));
-      if (totalFundedStep >= steps) clearInterval(totalFundedInterval);
-    }, stepInterval);
-
-    // Animate Progress
-    const progressIncrement = progress / steps;
-    let progressStep = 0;
-    const progressInterval = setInterval(() => {
-      progressStep++;
-      setAnimatedProgress(Math.min(progressIncrement * progressStep, progress));
-      if (progressStep >= steps) clearInterval(progressInterval);
-    }, stepInterval);
-
-    return () => {
-      clearInterval(totalValueInterval);
-      clearInterval(totalFundedInterval);
-      clearInterval(progressInterval);
-    };
+    setAnimatedProgress(progress);
   }, [pool, poolStats]);
 
   const handleInvest = async (e: React.FormEvent) => {
@@ -292,14 +255,14 @@ export default function PoolDetail({ params }: { params: Promise<{ id: string }>
 
           {/* Pool Overview */}
           <div
-            className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12 animate-fade-in"
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 animate-fade-in"
             style={{ animationDelay: "0.2s" }}
           >
             <div className="border border-primary/20 bg-background/5 rounded-xl p-6 hover:border-primary/30 hover:bg-primary/5 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-foreground/60 font-bold uppercase tracking-wide mb-2 font-stack-sans-text">
-                    Total Funded (Target)
+                    Total Funded
                   </p>
                   <p className="text-3xl font-bold text-foreground font-stack-sans-text">
                     {animatedTotalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })} MNT
@@ -307,22 +270,6 @@ export default function PoolDetail({ params }: { params: Promise<{ id: string }>
                 </div>
                 <div className="p-3 bg-primary/10 rounded-lg">
                   <DollarSign className="w-8 h-8 text-primary" />
-                </div>
-              </div>
-            </div>
-
-            <div className="border border-primary/20 bg-background/5 rounded-xl p-6 hover:border-primary/30 hover:bg-primary/5 hover:shadow-lg hover:shadow-primary/20 transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-foreground/60 font-bold uppercase tracking-wide mb-2 font-stack-sans-text">
-                    Advance to Merchant (A)
-                  </p>
-                  <p className="text-3xl font-bold text-primary font-stack-sans-text">
-                    {animatedTotalFunded.toLocaleString(undefined, { maximumFractionDigits: 2 })} MNT
-                  </p>
-                </div>
-                <div className="p-3 bg-primary/10 rounded-lg">
-                  <TrendingUp className="w-8 h-8 text-primary" />
                 </div>
               </div>
             </div>

@@ -169,12 +169,23 @@ export function calculatePoolStats(pool: PoolData) {
     ? Number((pool.juniorRaised * 10000n) / juniorAdvancePortion) / 100
     : 0;
 
-  // ROI based on face value vs target raise
-  const seniorROI = pool.seniorTargetRaise > 0n 
-    ? Number(((pool.seniorFaceValue - pool.seniorTargetRaise) * 10000n) / pool.seniorTargetRaise) / 100
+  // ROI calculation: ROI = discount / (1 - discount)
+  // where discount = (faceValue - targetRaise) / faceValue
+  // This simplifies to: ROI = (faceValue - targetRaise) / targetRaise
+  // But we need to use the formula: ROI = discount / (1 - discount)
+  // discount = (faceValue - targetRaise) / faceValue
+  const seniorDiscount = pool.seniorFaceValue > 0n
+    ? Number((pool.seniorFaceValue - pool.seniorTargetRaise) * 10000n / pool.seniorFaceValue) / 10000
     : 0;
-  const juniorROI = pool.juniorTargetRaise > 0n 
-    ? Number(((pool.juniorFaceValue - pool.juniorTargetRaise) * 10000n) / pool.juniorTargetRaise) / 100
+  const juniorDiscount = pool.juniorFaceValue > 0n
+    ? Number((pool.juniorFaceValue - pool.juniorTargetRaise) * 10000n / pool.juniorFaceValue) / 10000
+    : 0;
+  
+  const seniorROI = seniorDiscount > 0 && seniorDiscount < 1
+    ? (seniorDiscount / (1 - seniorDiscount)) * 100
+    : 0;
+  const juniorROI = juniorDiscount > 0 && juniorDiscount < 1
+    ? (juniorDiscount / (1 - juniorDiscount)) * 100
     : 0;
 
   // Total receive C = seniorFaceValue + juniorFaceValue

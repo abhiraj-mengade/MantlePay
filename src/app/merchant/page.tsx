@@ -258,7 +258,8 @@ export default function Merchant() {
       receivableValue = matchingOrder.amount.toString();
     }
     
-    const seniorDiscBPS = "100";
+    // Default discounts: Senior 5% (500 BPS), Junior 12% (1200 BPS)
+    const seniorDiscBPS = "500";
     const juniorDiscBPS = "1200";
     const investorReturn = receivableValue 
       ? calculateInvestorReturn(parseFloat(receivableValue), parseInt(seniorDiscBPS), parseInt(juniorDiscBPS)).toFixed(4)
