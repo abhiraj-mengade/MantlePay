@@ -151,39 +151,50 @@ export function parsePoolData(id: number, data: readonly [
 export function calculatePoolStats(pool: PoolData) {
   const totalTarget = pool.seniorTargetRaise + pool.juniorTargetRaise;
   const totalRaised = pool.seniorRaised + pool.juniorRaised;
-  const fundingProgress = totalTarget > 0n 
-    ? Number((totalRaised * 10000n) / totalTarget) / 100 
+
+  // Economic split of advance amount A between Senior (75%) and Junior (25%)
+  const seniorAdvancePortion = (pool.advanceAmount * 75n) / 100n;
+  const juniorAdvancePortion = (pool.advanceAmount * 25n) / 100n;
+
+  // Overall funding progress measured against advance amount A
+  const fundingProgress = pool.advanceAmount > 0n
+    ? Number((totalRaised * 10000n) / pool.advanceAmount) / 100
     : 0;
   
-  // Calculate APY based on face value vs target raise
-  const seniorAPY = pool.seniorTargetRaise > 0n 
+  // Tranche progress measured against 75% and 25% of A respectively
+  const seniorProgress = seniorAdvancePortion > 0n
+    ? Number((pool.seniorRaised * 10000n) / seniorAdvancePortion) / 100
+    : 0;
+  const juniorProgress = juniorAdvancePortion > 0n
+    ? Number((pool.juniorRaised * 10000n) / juniorAdvancePortion) / 100
+    : 0;
+
+  // ROI based on face value vs target raise
+  const seniorROI = pool.seniorTargetRaise > 0n 
     ? Number(((pool.seniorFaceValue - pool.seniorTargetRaise) * 10000n) / pool.seniorTargetRaise) / 100
     : 0;
-  const juniorAPY = pool.juniorTargetRaise > 0n 
+  const juniorROI = pool.juniorTargetRaise > 0n 
     ? Number(((pool.juniorFaceValue - pool.juniorTargetRaise) * 10000n) / pool.juniorTargetRaise) / 100
     : 0;
-  
-  const seniorProgress = pool.seniorTargetRaise > 0n
-    ? Number((pool.seniorRaised * 10000n) / pool.seniorTargetRaise) / 100
-    : 0;
-  const juniorProgress = pool.juniorTargetRaise > 0n
-    ? Number((pool.juniorRaised * 10000n) / pool.juniorTargetRaise) / 100
-    : 0;
+
+  // Total receive C = seniorFaceValue + juniorFaceValue
+  const totalReceive = pool.seniorFaceValue + pool.juniorFaceValue;
 
   return {
     totalValue: formatMNT(pool.receivableValue),
     advanceAmount: formatMNT(pool.advanceAmount),
-    seniorAPY,
-    juniorAPY,
+    seniorAPY: seniorROI, // kept key name for backwards compatibility; interpreted as ROI in UI
+    juniorAPY: juniorROI,
     fundingProgress,
     seniorProgress,
     juniorProgress,
     seniorRaised: formatMNT(pool.seniorRaised),
-    seniorTarget: formatMNT(pool.seniorTargetRaise),
+    seniorTarget: formatMNT(seniorAdvancePortion),
     juniorRaised: formatMNT(pool.juniorRaised),
-    juniorTarget: formatMNT(pool.juniorTargetRaise),
+    juniorTarget: formatMNT(juniorAdvancePortion),
     totalRaised: formatMNT(totalRaised),
     totalTarget: formatMNT(totalTarget),
+    totalReceive: formatMNT(totalReceive),
     isFunded: pool.isFunded,
   };
 }

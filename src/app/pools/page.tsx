@@ -201,7 +201,7 @@ export default function Pools() {
 
             <div className="p-6 rounded-2xl border border-foreground/15 bg-background/10 ring-1 ring-foreground/5 hover:ring-primary/30 hover:border-primary/40 hover:bg-primary/5 transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-primary/10">
               <p className="text-xs text-foreground/60 uppercase tracking-wide mb-2 font-stack-sans-text">
-                Avg APY
+                Avg ROI
               </p>
               <p className="text-3xl font-bold text-primary font-stack-sans-text">
                 {stats.avgAPY}%
@@ -321,7 +321,7 @@ export default function Pools() {
                           <div className="grid grid-cols-2 gap-3">
                             <div className="p-3 rounded-lg bg-foreground/5 border border-foreground/10">
                               <p className="text-xs text-foreground/60 mb-1 font-stack-sans-text">
-                                Senior APY
+                                Senior ROI
                               </p>
                               <p className="text-lg font-bold text-primary font-stack-sans-text">
                                 {poolStats.seniorAPY.toFixed(1)}%
@@ -329,7 +329,7 @@ export default function Pools() {
                             </div>
                             <div className="p-3 rounded-lg bg-foreground/5 border border-foreground/10">
                               <p className="text-xs text-foreground/60 mb-1 font-stack-sans-text">
-                                Junior APY
+                                Junior ROI
                               </p>
                               <p className="text-lg font-bold text-primary font-stack-sans-text">
                                 {poolStats.juniorAPY.toFixed(1)}%

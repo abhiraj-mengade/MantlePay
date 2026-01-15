@@ -59,25 +59,27 @@ export default function PoolDetail({ params }: { params: Promise<{ id: string }>
     const steps = 30;
     const stepInterval = duration / steps;
 
-    const totalValue = Number(pool.receivableValue) / 1e18;
-    const totalFunded = Number(pool.seniorRaised + pool.juniorRaised) / 1e18;
+    // Total funded target (what investors are expected to fund)
+    const totalFundTarget = Number(pool.seniorTargetRaise + pool.juniorTargetRaise) / 1e18;
+    // Advance amount A to merchant
+    const advanceAmount = Number(pool.advanceAmount) / 1e18;
     const progress = poolStats.fundingProgress;
 
-    // Animate Total Value
-    const totalValueIncrement = totalValue / steps;
+    // Animate Total Funded (Target)
+    const totalValueIncrement = totalFundTarget / steps;
     let totalValueStep = 0;
     const totalValueInterval = setInterval(() => {
       totalValueStep++;
-      setAnimatedTotalValue(Math.min(totalValueIncrement * totalValueStep, totalValue));
+      setAnimatedTotalValue(Math.min(totalValueIncrement * totalValueStep, totalFundTarget));
       if (totalValueStep >= steps) clearInterval(totalValueInterval);
     }, stepInterval);
 
-    // Animate Total Funded
-    const totalFundedIncrement = totalFunded / steps;
+    // Animate Advance Amount
+    const totalFundedIncrement = advanceAmount / steps;
     let totalFundedStep = 0;
     const totalFundedInterval = setInterval(() => {
       totalFundedStep++;
-      setAnimatedTotalFunded(Math.min(totalFundedIncrement * totalFundedStep, totalFunded));
+      setAnimatedTotalFunded(Math.min(totalFundedIncrement * totalFundedStep, advanceAmount));
       if (totalFundedStep >= steps) clearInterval(totalFundedInterval);
     }, stepInterval);
 
@@ -297,7 +299,7 @@ export default function PoolDetail({ params }: { params: Promise<{ id: string }>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-foreground/60 font-bold uppercase tracking-wide mb-2 font-stack-sans-text">
-                    Total Value
+                    Total Funded (Target)
                   </p>
                   <p className="text-3xl font-bold text-foreground font-stack-sans-text">
                     {animatedTotalValue.toLocaleString(undefined, { maximumFractionDigits: 2 })} MNT
@@ -313,7 +315,7 @@ export default function PoolDetail({ params }: { params: Promise<{ id: string }>
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-foreground/60 font-bold uppercase tracking-wide mb-2 font-stack-sans-text">
-                    Total Funded
+                    Advance to Merchant (A)
                   </p>
                   <p className="text-3xl font-bold text-primary font-stack-sans-text">
                     {animatedTotalFunded.toLocaleString(undefined, { maximumFractionDigits: 2 })} MNT
@@ -425,7 +427,7 @@ export default function PoolDetail({ params }: { params: Promise<{ id: string }>
                           Lower risk, stable returns
                         </p>
                         <p className="text-2xl font-bold text-primary font-stack-sans-text">
-                              {poolStats?.seniorAPY.toFixed(1)}% APY
+                              {poolStats?.seniorAPY.toFixed(1)}% ROI
                         </p>
                         <div className="pt-2 border-t border-foreground/10">
                           <div className="flex justify-between text-xs mb-1">
@@ -469,7 +471,7 @@ export default function PoolDetail({ params }: { params: Promise<{ id: string }>
                           Higher risk, higher returns
                         </p>
                         <p className="text-2xl font-bold text-primary font-stack-sans-text">
-                              {poolStats?.juniorAPY.toFixed(1)}% APY
+                              {poolStats?.juniorAPY.toFixed(1)}% ROI
                         </p>
                         <div className="pt-2 border-t border-foreground/10">
                           <div className="flex justify-between text-xs mb-1">
@@ -568,9 +570,9 @@ export default function PoolDetail({ params }: { params: Promise<{ id: string }>
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-foreground/60 font-stack-sans-text">Total Target</span>
+                    <span className="text-foreground/60 font-stack-sans-text">Total Receive (C)</span>
                     <span className="font-semibold text-foreground font-stack-sans-text">
-                      {poolStats?.totalTarget} MNT
+                      {poolStats?.totalReceive} MNT
                     </span>
                   </div>
                   <div className="flex justify-between">

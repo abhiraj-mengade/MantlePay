@@ -208,30 +208,43 @@ export default function Merchant() {
     const newForm = { ...poolForm, [e.target.name]: e.target.value };
     
     // Auto-calculate Investor Return (C) when Receivable Value or discounts change
-    if (e.target.name === "receivableValue" || e.target.name === "seniorDiscBPS" || e.target.name === "juniorDiscBPS") {
-      const receivableValue = parseFloat(newForm.receivableValue) || 0;
-      if (receivableValue > 0) {
-        // Calculate C: Typically C = R * interest_rate
-        // Using a standard formula: C = (R - A) * multiplier, where A = 0.8R
-        // Or simpler: C = R * interest_rate (e.g., 5% = 0.05)
-        // For receivables financing, a common rate is 5-10% of R
-        const interestRate = 0.05; // 5% default interest rate
-        const investorReturn = receivableValue * interestRate;
-        newForm.investorReturn = investorReturn.toFixed(4);
+  if (e.target.name === "receivableValue" || e.target.name === "seniorDiscBPS" || e.target.name === "juniorDiscBPS") {
+    const receivableValue = parseFloat(newForm.receivableValue) || 0;
+    const seniorDisc = parseInt(newForm.seniorDiscBPS || '0') / 10000; // dS
+    const juniorDisc = parseInt(newForm.juniorDiscBPS || '0') / 10000; // dJ
+    if (receivableValue > 0) {
+      // Hedera flow formula:
+      // A = 0.8 * R
+      // C = A / ( s * (1 - dS) + j * (1 - dJ) )
+      // where s = 0.75, j = 0.25
+      const R = receivableValue;
+      const A = 0.8 * R;
+      const s = 0.75;
+      const j = 0.25;
+      const denom = s * (1 - seniorDisc) + j * (1 - juniorDisc);
+      if (denom > 0) {
+        const C = A / denom;
+        newForm.investorReturn = C.toFixed(4);
       }
     }
-    
-    setPoolForm(newForm);
+  }
+  
+  setPoolForm(newForm);
   };
 
-  // Calculate investor return based on receivable value and discounts
+  // Calculate investor return C based on receivable value (R) and discounts
   const calculateInvestorReturn = (receivableValue: number, seniorDiscBPS: number, juniorDiscBPS: number): number => {
     if (receivableValue <= 0) return 0;
-    
-    // Standard formula: C = R * interest_rate
-    // Using 5% as default interest rate (can be adjusted)
-    const interestRate = 0.05;
-    return receivableValue * interestRate;
+    const R = receivableValue;
+    const A = 0.8 * R;
+    const s = 0.75;
+    const j = 0.25;
+    const dS = seniorDiscBPS / 10000; // convert BPS to decimal
+    const dJ = juniorDiscBPS / 10000;
+    const denom = s * (1 - dS) + j * (1 - dJ);
+    if (denom <= 0) return 0;
+    const C = A / denom;
+    return C;
   };
 
   const openPoolForm = (tokenId: string) => {
@@ -302,7 +315,17 @@ export default function Merchant() {
 
       const tokenId = BigInt(selectedNFTTokenId);
       const receivableWei = parseMNT(poolForm.receivableValue);
-      const investorReturnWei = parseMNT(poolForm.investorReturn);
+      // poolForm.investorReturn holds C; contract expects only interest (C - A)
+      const R = parseFloat(poolForm.receivableValue);
+      const C = parseFloat(poolForm.investorReturn);
+      const A = 0.8 * R;
+      const interest = C - A;
+      if (!isFinite(interest) || interest <= 0) {
+        alert("Computed investor interest (C - 0.8R) must be > 0. Please check R, discounts, and C.");
+        setIsCreatingPool(false);
+        return;
+      }
+      const investorReturnWei = parseMNT(interest.toFixed(8));
       const seniorBPS = BigInt(poolForm.seniorDiscBPS);
       const juniorBPS = BigInt(poolForm.juniorDiscBPS);
 
