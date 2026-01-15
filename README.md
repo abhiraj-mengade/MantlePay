@@ -14,7 +14,7 @@
 
 </div>
 
----
+<img width="142" height="62" alt="Screenshot 2026-01-15 at 7 26 22 PM" src="https://github.com/user-attachments/assets/c95d6fa7-7af4-4801-ad00-2c750e7990de" />
 
 ## 📋 Table of Contents
 
@@ -32,6 +32,10 @@
 ## 🎯 Overview
 
 **MantlePay** is a decentralized finance (DeFi) platform that enables merchants to tokenize their accounts receivable and access immediate liquidity. Built on the Mantle Network, MantlePay leverages smart contracts to create a transparent, secure, and efficient marketplace for receivable financing.
+
+![WhatsApp Image 2026-01-15 at 8 24 01 PM (1)](https://github.com/user-attachments/assets/ab882335-e5a0-4165-9418-b4422d5dbf2e)
+![WhatsApp Image 2026-01-15 at 8 24 01 PM](https://github.com/user-attachments/assets/0af305dc-b3f7-4dcf-aa19-d8214678b2fc)
+
 
 ### Key Benefits
 
