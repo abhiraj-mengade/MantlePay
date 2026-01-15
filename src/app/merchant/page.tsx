@@ -122,7 +122,7 @@ export default function Merchant() {
   // Get next token ID
   const { data: nextId } = useNextReceiptId();
 
-  // Load owned NFTs
+  // Load owned NFTs and update order status
   useEffect(() => {
     const loadNFTs = async () => {
       if (!account?.address) {
@@ -134,6 +134,31 @@ export default function Merchant() {
       try {
         const nfts = await findOwnedNFTs(account.address, nextId);
         setOwnedNFTs(nfts);
+        
+        // Update order status to "minted" when corresponding NFT is detected
+        // This ensures orders disappear from "Your Sales Orders" once NFT is minted
+        setOrders(prevOrders => {
+          const mintedOrderCount = prevOrders.filter(o => o.status === "minted").length;
+          
+          // If we have more NFTs than minted orders, mark the oldest pending/approved orders as minted
+          if (nfts.length > mintedOrderCount) {
+            const ordersToMint = nfts.length - mintedOrderCount;
+            const pendingOrders = prevOrders
+              .filter(o => o.status === "pending" || o.status === "approved")
+              .sort((a, b) => a.createDate.getTime() - b.createDate.getTime())
+              .slice(0, ordersToMint);
+            
+            if (pendingOrders.length > 0) {
+              const updatedOrders = prevOrders.map(order => {
+                const shouldMint = pendingOrders.some(po => po.orderId === order.orderId);
+                return shouldMint ? { ...order, status: "minted" as const } : order;
+              });
+              return updatedOrders;
+            }
+          }
+          
+          return prevOrders;
+        });
       } catch (error) {
         console.error("Failed to load NFTs:", error);
       } finally {
@@ -379,10 +404,12 @@ export default function Merchant() {
     }
   };
 
+  // Filter out minted orders - they should only appear in "Your R-NFTs"
+  const pendingOrders = orders.filter(order => order.status !== "minted");
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
-  const totalPages = Math.ceil(orders.length / ordersPerPage);
+  const currentOrders = pendingOrders.slice(indexOfFirstOrder, indexOfLastOrder);
+  const totalPages = Math.ceil(pendingOrders.length / ordersPerPage);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -604,7 +631,7 @@ export default function Merchant() {
                 📋 <strong>Local reference:</strong> This list is for your convenience. Check "Your Receipt NFTs" above for blockchain-verified NFTs minted by customers on their devices.
               </p>
 
-              {orders.length === 0 ? (
+              {pendingOrders.length === 0 ? (
                 <div className="text-center py-12">
                   <div className="text-4xl mb-4">📋</div>
                   <p className="text-foreground/60 font-stack-sans-text">
@@ -810,9 +837,6 @@ export default function Merchant() {
                     {poolForm.investorReturn ? parseFloat(poolForm.investorReturn).toFixed(4) : "0.0000"} MNT
                   </span>
                 </div>
-                <p className="text-xs text-primary/70 mt-2 font-stack-sans-text">
-                  💡 Calculated as 5% of Receivable Value (C = R × 0.05)
-                </p>
               </div>
 
               {/* Receivable Value - Auto-populated from order */}
