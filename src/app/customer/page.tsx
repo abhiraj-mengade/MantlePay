@@ -38,7 +38,7 @@ export default function CustomerPage() {
       };
 
       setScannedOrder(order);
-      setIsScanning(false);
+    setIsScanning(false);
     } catch (error) {
       console.error("Invalid QR code data:", error);
       alert("Invalid QR code. Please scan a valid order QR code.");
@@ -47,8 +47,8 @@ export default function CustomerPage() {
 
   const handleOrderApproved = (order: SalesOrder) => {
     const approvedOrder = { ...order, status: "approved" as const };
-    setApprovedOrders([approvedOrder, ...approvedOrders]);
-    setScannedOrder(null);
+      setApprovedOrders([approvedOrder, ...approvedOrders]);
+      setScannedOrder(null);
   };
 
   const handleScanAnother = () => {
