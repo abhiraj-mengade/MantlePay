@@ -8,4 +8,5 @@ export type SalesOrder = {
   qrCode?: string; // QR code image (data URL)
   qrData?: string; // QR code JSON data (for parsing)
   customerAddress?: string; // Merchant's wallet address (for NFT minting)
+  nftTokenId?: string; // NFT token ID when matched (for reliable linking)
 };

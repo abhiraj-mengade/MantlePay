@@ -82,27 +82,37 @@ export default function Merchant() {
     }
   }, [orders]);
 
-  // Match NFT token ID to order by checking which orders might correspond
-  // Since NFTs are minted sequentially, we can estimate based on order creation time
+  // Match NFT token ID to order
+  // Strategy:
+  // 1. First, try exact match by stored nftTokenId (most reliable)
+  // 2. If no exact match, use heuristic: assume sequential minting
   const findOrderForNFT = (tokenId: string): MerchantOrder | null => {
-    const tokenIdNum = parseInt(tokenId);
-    
-    // Try to find order that matches:
-    // 1. Orders with status "minted" first
-    // 2. Then by creation order (assuming NFTs are minted in order)
-    const mintedOrders = orders.filter(o => o.status === "minted");
-    if (mintedOrders.length > 0 && tokenIdNum <= mintedOrders.length) {
-      // If we have minted orders, assume they correspond sequentially
-      const sortedMinted = mintedOrders.sort((a, b) => a.createDate.getTime() - b.createDate.getTime());
-      return sortedMinted[tokenIdNum - 1] || null;
+    // First: Check if any order already has this token ID stored (exact match)
+    const exactMatch = orders.find(o => o.nftTokenId === tokenId);
+    if (exactMatch) {
+      return exactMatch;
     }
     
-    // Fallback: use most recent order with amount
-    const recentOrder = orders
-      .filter(order => order.amount > 0)
-      .sort((a, b) => b.createDate.getTime() - a.createDate.getTime())[0];
+    // Second: Heuristic matching (assumes sequential minting)
+    // This is less reliable but needed for first-time matching
+    const tokenIdNum = parseInt(tokenId);
+    const nonMintedOrders = orders
+      .filter(o => o.status !== "minted" && !o.nftTokenId) // Only match orders without token ID
+      .sort((a, b) => a.createDate.getTime() - b.createDate.getTime());
     
-    return recentOrder || null;
+    const mintedCount = orders.filter(o => o.status === "minted" && o.nftTokenId).length;
+    const orderIndex = tokenIdNum - mintedCount;
+    
+    if (orderIndex >= 0 && orderIndex < nonMintedOrders.length) {
+      return nonMintedOrders[orderIndex];
+    }
+    
+    // Fallback: use oldest non-minted order without token ID
+    if (nonMintedOrders.length > 0) {
+      return nonMintedOrders[0];
+    }
+    
+    return null;
   };
 
   const contractsDeployed = areContractsDeployed();
@@ -134,37 +144,11 @@ export default function Merchant() {
       try {
         const nfts = await findOwnedNFTs(account.address, nextId);
         setOwnedNFTs(nfts);
-        
-        // Update order status to "minted" when corresponding NFT is detected
-        // This ensures orders disappear from "Your Sales Orders" once NFT is minted
-        setOrders(prevOrders => {
-          const mintedOrderCount = prevOrders.filter(o => o.status === "minted").length;
-          
-          // If we have more NFTs than minted orders, mark the oldest pending/approved orders as minted
-          if (nfts.length > mintedOrderCount) {
-            const ordersToMint = nfts.length - mintedOrderCount;
-            const pendingOrders = prevOrders
-              .filter(o => o.status === "pending" || o.status === "approved" || o.status === "verified")
-              .sort((a, b) => a.createDate.getTime() - b.createDate.getTime())
-              .slice(0, ordersToMint);
-            
-            if (pendingOrders.length > 0) {
-              const orderIdsToMint = new Set(pendingOrders.map(o => o.orderId));
-              const updatedOrders = prevOrders.map(order => {
-                if (orderIdsToMint.has(order.orderId) && order.status !== "minted") {
-                  return { ...order, status: "minted" as const };
-                }
-                return order;
-              });
-              
-              // Save to localStorage immediately to persist the change
-              localStorage.setItem("merchantOrders", JSON.stringify(updatedOrders));
-              return updatedOrders;
-            }
-          }
-          
-          return prevOrders;
-        });
+        // Note: We don't auto-mark orders as "minted" here because we can't reliably
+        // match NFT token IDs to specific orders without additional data.
+        // Orders are marked as "minted" only when:
+        // 1. A pool is created (we know the exact token ID)
+        // 2. Or when explicitly matched by the merchant
       } catch (error) {
         console.error("Failed to load NFTs:", error);
       } finally {
@@ -288,6 +272,25 @@ export default function Merchant() {
     
     if (matchingOrder) {
       receivableValue = matchingOrder.amount.toString();
+      
+      // Mark the order as "minted" and store the token ID for reliable future matching
+      if (matchingOrder.status !== "minted" || matchingOrder.nftTokenId !== tokenId) {
+        setOrders(prevOrders => {
+          const updatedOrders = prevOrders.map(order => {
+            if (order.orderId === matchingOrder.orderId) {
+              return { 
+                ...order, 
+                status: "minted" as const,
+                nftTokenId: tokenId // Store token ID for reliable matching
+              };
+            }
+            return order;
+          });
+          // Save to localStorage immediately
+          localStorage.setItem("merchantOrders", JSON.stringify(updatedOrders));
+          return updatedOrders;
+        });
+      }
     }
     
     // Default discounts: Senior 5% (500 BPS), Junior 12% (1200 BPS)
@@ -390,6 +393,22 @@ export default function Merchant() {
       }
 
       await createPool(tokenId, receivableWei, investorReturnWei, seniorBPS, juniorBPS);
+
+      // Mark the corresponding order as "minted" when pool is created
+      const matchingOrder = findOrderForNFT(selectedNFTTokenId);
+      if (matchingOrder) {
+        setOrders(prevOrders => {
+          const updatedOrders = prevOrders.map(order => {
+            if (order.orderId === matchingOrder.orderId && order.status !== "minted") {
+              return { ...order, status: "minted" as const };
+            }
+            return order;
+          });
+          // Save to localStorage immediately
+          localStorage.setItem("merchantOrders", JSON.stringify(updatedOrders));
+          return updatedOrders;
+        });
+      }
 
       setShowPoolForm(false);
       setSelectedNFTTokenId(null);
