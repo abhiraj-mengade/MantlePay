@@ -302,7 +302,7 @@ export default function PoolDetail({ params }: { params: Promise<{ id: string }>
                     {pool.isFunded ? "FUNDED" : "ACTIVE"}
                   </p>
                   <p className="text-xs text-foreground/60 mt-1 font-stack-sans-text">
-                    Repaid: {poolStats ? poolStats.totalRaised : "0"} MNT
+                    Invested: {poolStats ? poolStats.totalRaised : "0"} MNT
                   </p>
                 </div>
                 <div className="p-3 bg-primary/10 rounded-lg">
@@ -520,6 +520,24 @@ export default function PoolDetail({ params }: { params: Promise<{ id: string }>
                     <span className="text-foreground/60 font-stack-sans-text">Total Receive (C)</span>
                     <span className="font-semibold text-foreground font-stack-sans-text">
                       {poolStats?.totalReceive} MNT
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-foreground/60 font-stack-sans-text">Senior Invested</span>
+                    <span className="font-semibold text-primary font-stack-sans-text">
+                      {poolStats?.seniorRaised} MNT
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-foreground/60 font-stack-sans-text">Junior Invested</span>
+                    <span className="font-semibold text-primary font-stack-sans-text">
+                      {poolStats?.juniorRaised} MNT
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-foreground/60 font-stack-sans-text">Total Invested</span>
+                    <span className="font-semibold text-foreground font-stack-sans-text">
+                      {poolStats?.totalRaised} MNT
                     </span>
                   </div>
                   <div className="flex justify-between">
